@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/tx 
+     	http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+     	http://www.springframework.org/schema/aop 
+     	http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location">
+			<value>classpath:tweet.properties</value>
+		</property>
+	</bean>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${database.drivername}" />
+		<property name="url" value="${database.url}" />
+		<property name="username" value="${database.username}" />
+		<property name="password" value="${database.password}" />
+	</bean>
+
+	<bean id="sqlProperties"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename" value="tweet" />
+	</bean>
+
+	<bean id="npjtBean" class="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate">
+	<constructor-arg index="0" ref="dataSource">
+	</constructor-arg>
+	</bean>
+
+	<bean id="tweetDaoBean" class="com.twitter.dao.impl.TwitterDAOImpl">
+		<property name="sqlProperties" ref="sqlProperties" />
+		<property name="npjt" ref="npjtBean" />
+	</bean>
+
+	<bean id="tweetServiceBean" class="com.twitter.service.impl.TwitterServiceImpl">
+		<property name="twitterDoa" ref="tweetDaoBean"></property>
+	</bean>
+
+	<bean id="tweetDelegateBean" class="com.twitter.delegate.impl.TwitterDelegateImpl">
+		<property name="twitterService" ref="tweetServiceBean"></property>
+	</bean>
+
+	<bean id="tweetController" class="com.twitter.controller.impl.TweetControllerImpl">
+		<property name="tweetDelegate" ref="tweetDelegateBean"></property>
+	</bean>
+
+
+</beans>
+
+
+
+
